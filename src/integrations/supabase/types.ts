@@ -14,16 +14,199 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_actions: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          meta: Json | null
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
+      job_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          job_id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          job_id: string
+          reason?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          job_id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_reports_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          apply_url: string | null
+          batch_year: number | null
+          company: string
+          created_at: string
+          deadline: string | null
+          description: string | null
+          experience: string | null
+          id: string
+          image_url: string | null
+          job_type: string | null
+          location: string | null
+          posted_by: string
+          report_count: number
+          salary: string | null
+          status: Database["public"]["Enums"]["post_status"]
+          title: string
+          updated_at: string
+          views: number
+          work_mode: string | null
+        }
+        Insert: {
+          apply_url?: string | null
+          batch_year?: number | null
+          company: string
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          experience?: string | null
+          id?: string
+          image_url?: string | null
+          job_type?: string | null
+          location?: string | null
+          posted_by: string
+          report_count?: number
+          salary?: string | null
+          status?: Database["public"]["Enums"]["post_status"]
+          title: string
+          updated_at?: string
+          views?: number
+          work_mode?: string | null
+        }
+        Update: {
+          apply_url?: string | null
+          batch_year?: number | null
+          company?: string
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          experience?: string | null
+          id?: string
+          image_url?: string | null
+          job_type?: string | null
+          location?: string | null
+          posted_by?: string
+          report_count?: number
+          salary?: string | null
+          status?: Database["public"]["Enums"]["post_status"]
+          title?: string
+          updated_at?: string
+          views?: number
+          work_mode?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          banned: boolean
+          created_at: string
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          banned?: boolean
+          created_at?: string
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          banned?: boolean
+          created_at?: string
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_stats: { Args: never; Returns: Json }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      post_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +333,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      post_status: ["pending", "approved", "rejected"],
+    },
   },
 } as const
