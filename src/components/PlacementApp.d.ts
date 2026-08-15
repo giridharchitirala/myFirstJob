@@ -1,5 +1,5 @@
 declare module "@/components/PlacementApp" {
-  import type { ComponentType } from "react";
-  const PlacementApp: ComponentType;
+  import type { FunctionComponent } from "react";
+  const PlacementApp: FunctionComponent;
   export default PlacementApp;
 }
