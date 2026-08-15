@@ -234,7 +234,7 @@ function JobCard({ job, onOpen, onApply, onSave, saved, applied, onEdit, onDelet
       >
         {!compact && (
           <div style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--muted)" }} className="text-[10px]">
-            {job.salaryMin || job.salaryMax ? `\u20b9${job.salaryMin || "?"}\u2013${job.salaryMax || "?"} LPA` : "Salary N/A"}
+            {job.salaryMin || job.salaryMax ? `₹${job.salaryMin || "?"}–${job.salaryMax || "?"} LPA` : "Salary N/A"}
           </div>
         )}
         <div className="flex items-center gap-2">
@@ -314,7 +314,7 @@ function JobModal({ job, onClose, onApply, onSave, saved, applied }) {
           )}
           <div style={{ color: "var(--muted)" }} className="grid grid-cols-2 gap-2 text-xs">
             <span className="flex items-center gap-1"><MapPin size={12} />{job.location || "Not specified"}</span>
-            <span className="flex items-center gap-1"><Users size={12} />\u20b9{job.salaryMin || "?"}\u2013{job.salaryMax || "?"} LPA</span>
+            <span className="flex items-center gap-1"><Users size={12} />₹{job.salaryMin || "?"}–{job.salaryMax || "?"} LPA</span>
             <span className="flex items-center gap-1"><Eye size={12} />{job.views} views</span>
             <span className="flex items-center gap-1"><Clock size={12} />Posted {timeAgo(job.postedAt)}</span>
           </div>
@@ -327,7 +327,7 @@ function JobModal({ job, onClose, onApply, onSave, saved, applied }) {
             className="flex-1 h-11 rounded-lg font-semibold flex items-center justify-center gap-2 hover:brightness-95 active:scale-95 transition"
           >
             {applied ? <CheckCircle2 size={16} /> : <ExternalLink size={16} />}
-            {applied ? "Applied \u2014 open link again" : "Apply now"}
+            {applied ? "Applied — open link again" : "Apply now"}
           </button>
         </div>
       </div>
@@ -507,7 +507,7 @@ function AuthForms({ mode, setMode, onLogin, onSignup, onForgotLookup, onResetPa
   };
   const submitSignup = () => {
     if (!s.name.trim() || !s.email.trim() || !s.password) return setErr("Fill all required fields");
-    if (!isValidEmail(s.email)) return setErr("Enter a valid email address \u2014 it will be your username");
+    if (!isValidEmail(s.email)) return setErr("Enter a valid email address — it will be your username");
     if (s.password.length < 6) return setErr("Password must be at least 6 characters");
     if (s.password !== s.confirm) return setErr("Passwords do not match");
     setErr(""); onSignup(s);
@@ -539,8 +539,8 @@ function AuthForms({ mode, setMode, onLogin, onSignup, onForgotLookup, onResetPa
         </div>
         <p style={{ color: "var(--muted)" }} className="text-xs mb-5">
           {mode === "login" ? "Log in with your email to apply, save jobs and post openings."
-            : mode === "signup" ? "Your email becomes your unique username \u2014 sign up to browse, post and apply in real time."
-            : "For this demo, we verify by matching your registered email \u2014 a production version would email you a secure reset link."}
+            : mode === "signup" ? "Your email becomes your unique username — sign up to browse, post and apply in real time."
+            : "For this demo, we verify by matching your registered email — a production version would email you a secure reset link."}
         </p>
 
         {err && (
@@ -661,7 +661,7 @@ function AdminPanel({ users, jobs, adminRequests, onDeleteJob, isSuper, onApprov
         <p className="display-font text-2xl font-bold" style={{ color: "var(--ink)" }}>Admin panel</p>
       </div>
       <p style={{ color: "var(--muted)" }} className="text-sm mb-5">
-        {isSuper ? "You're the super admin \u2014 you approve new admin requests." : "You have admin access to moderate posts."}
+        {isSuper ? "You're the super admin — you approve new admin requests." : "You have admin access to moderate posts."}
       </p>
       <div className="flex gap-2 mb-5 flex-wrap">
         {[["overview", "Overview"], ["jobs", `All jobs (${jobs.length})`], ["users", `All users (${users.length})`]]
@@ -699,7 +699,7 @@ function AdminPanel({ users, jobs, adminRequests, onDeleteJob, isSuper, onApprov
                 <CompanyLogo job={j} size={32} />
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate" style={{ color: "var(--ink)" }}>{j.title || j.companyName}</p>
-                  <p className="text-xs truncate" style={{ color: "var(--muted)" }}>{j.companyName} \u00b7 posted by {j.postedByName}</p>
+                  <p className="text-xs truncate" style={{ color: "var(--muted)" }}>{j.companyName} · posted by {j.postedByName}</p>
                 </div>
               </div>
               <IconBtn icon={Trash2} onClick={() => onDeleteJob(j)} label="Delete job" danger />
@@ -853,7 +853,7 @@ export default function App() {
       const list = r ? JSON.parse(r.value) : [];
       const emailLower = s.email.trim().toLowerCase();
       if (list.some(u => u.username === emailLower)) { addToast("That email is already registered", "error"); return; }
-      if (list.some(u => u.name.trim().toLowerCase() === s.name.trim().toLowerCase())) { addToast("That display name is already taken \u2014 try another", "error"); return; }
+      if (list.some(u => u.name.trim().toLowerCase() === s.name.trim().toLowerCase())) { addToast("That display name is already taken — try another", "error"); return; }
       const newUser = {
         username: emailLower, name: s.name.trim(), email: emailLower,
         passwordObf: obf(s.password), passoutYear: s.passoutYear || null, createdAt: new Date().toISOString(),
@@ -864,7 +864,7 @@ export default function App() {
       setCurrentUser(newUser);
       setSavedIds([]); setAppliedIds([]);
       setView("feed");
-      addToast(newUser.isAdmin ? "Account created \u2014 admin access granted!" : "Account created! You're logged in.", "success");
+      addToast(newUser.isAdmin ? "Account created — admin access granted!" : "Account created! You're logged in.", "success");
     } catch { addToast("Signup failed, please try again", "error"); }
     finally { setAuthLoading(false); }
   };
@@ -935,7 +935,7 @@ export default function App() {
     if (editingJob) newJobs = jobs.map(j => j.id === job.id ? job : j);
     else newJobs = [...jobs, job];
     await saveJobs(newJobs);
-    addToast(editingJob ? "Job updated" : "Job posted \u2014 everyone can see it now!", "success");
+    addToast(editingJob ? "Job updated" : "Job posted — everyone can see it now!", "success");
     setEditingJob(null);
     setView("feed");
   };
@@ -1121,7 +1121,7 @@ export default function App() {
             currentUser ? (
               <div>
                 <p className="display-font text-2xl font-bold mb-1" style={{ color: "var(--ink)" }}>{editingJob ? "Edit job posting" : "Post a new job"}</p>
-                <p style={{ color: "var(--muted)" }} className="text-sm mb-6">Only company name and apply link are mandatory \u2014 every candidate on CampusHire will see this instantly.</p>
+                <p style={{ color: "var(--muted)" }} className="text-sm mb-6">Only company name and apply link are mandatory — every candidate on CampusHire will see this instantly.</p>
                 <JobForm
                   initial={editingJob ? { ...editingJob, requirementsText: editingJob.requirements.join(", "), imageUrl: editingJob.imageUrl || "" } : null}
                   onSubmit={handlePostJob}
@@ -1226,7 +1226,7 @@ export default function App() {
                 <div>
                   <p className="display-font text-2xl font-bold" style={{ color: "var(--ink)" }}>Every opening, sorted by batch.</p>
                   <p style={{ color: "var(--muted)" }} className="text-sm mt-1">
-                    {lastUpdated ? `Updated ${timeAgo(new Date(lastUpdated).toISOString())}` : "Loading..."} \u00b7 Synced live for every signed-in user
+                    {lastUpdated ? `Updated ${timeAgo(new Date(lastUpdated).toISOString())}` : "Loading..."} · Synced live for every signed-in user
                   </p>
                 </div>
                 <div className="flex gap-4">
@@ -1241,7 +1241,7 @@ export default function App() {
                 <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1">
                   <span className="flex items-center gap-1 text-xs shrink-0" style={{ color: "var(--muted)" }}><TrendingUp size={13} /> Trending:</span>
                   {trendingCompanies.map(([name, count]) => (
-                    <Badge key={name} tone="outline">{name} \u00b7 {count}</Badge>
+                    <Badge key={name} tone="outline">{name} · {count}</Badge>
                   ))}
                 </div>
               )}
@@ -1272,7 +1272,7 @@ export default function App() {
                     <option value="newest">Newest first</option>
                     <option value="oldest">Oldest first</option>
                     <option value="salary">Highest salary</option>
-                    <option value="company">Company A\u2013Z</option>
+                    <option value="company">Company A–Z</option>
                   </select>
                   <div className="flex gap-1">
                     <IconBtn icon={LayoutGrid} active={viewMode === "grid"} onClick={() => setViewMode("grid")} label="Grid view" />
@@ -1320,7 +1320,7 @@ export default function App() {
         </main>
 
         <footer style={{ borderTop: "1px solid var(--border)" }} className="max-w-6xl mx-auto px-4 py-6 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span style={{ color: "var(--muted)" }}>Synced live across every signed-in user \u00b7 no page refresh needed</span>
+          <span style={{ color: "var(--muted)" }}>Synced live across every signed-in user · no page refresh needed</span>
           <ColorfulText text="Organized by Shanmuk" />
         </footer>
 
