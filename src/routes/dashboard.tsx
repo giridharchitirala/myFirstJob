@@ -52,7 +52,10 @@ function DashboardPage() {
 
   async function remove(id: string) {
     const { error } = await supabase.from("jobs").delete().eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Post deleted");
     qc.invalidateQueries({ queryKey: ["jobs"] });
   }
