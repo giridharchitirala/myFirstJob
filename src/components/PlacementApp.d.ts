@@ -1,4 +1,5 @@
 declare module "@/components/PlacementApp" {
-  const PlacementApp: () => JSX.Element;
+  import type { ComponentType } from "react";
+  const PlacementApp: ComponentType;
   export default PlacementApp;
 }
