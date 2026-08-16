@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Building2, CalendarClock, Flag, MapPin, ExternalLink } from "lucide-react";
+import { Building2, CalendarClock, Flag, MapPin, ExternalLink, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,10 +8,12 @@ import { signedImageUrl, timeAgo, type JobRow } from "@/lib/jobs";
 export function JobCard({
   job,
   onReport,
+  onComments,
   footer,
 }: {
   job: JobRow;
   onReport?: (job: JobRow) => void;
+  onComments?: (job: JobRow) => void;
   footer?: React.ReactNode;
 }) {
   const [img, setImg] = useState<string | null>(null);
