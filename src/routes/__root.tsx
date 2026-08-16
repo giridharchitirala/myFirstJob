@@ -78,15 +78,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CampusHire — verified placement board" },
+      { title: "MyFirstJob — verified fresher jobs board" },
       {
         name: "description",
-        content: "Moderator-approved jobs and internships with community-driven removal of fake posts.",
+        content: "Freshers-only board: moderator-approved entry-level jobs, referrals and community removal of fake posts.",
       },
-      { property: "og:title", content: "CampusHire — verified placement board" },
+      { property: "og:title", content: "MyFirstJob — verified fresher jobs board" },
       {
         property: "og:description",
-        content: "Moderator-approved jobs and internships with community-driven removal of fake posts.",
+        content: "Freshers-only board: moderator-approved entry-level jobs, referrals and community removal of fake posts.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
