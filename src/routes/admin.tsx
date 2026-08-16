@@ -57,6 +57,7 @@ function AdminPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [editJob, setEditJob] = useState<JobRow | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
