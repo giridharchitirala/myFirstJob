@@ -44,6 +44,71 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          author_name: string
+          body: string
+          created_at: string
+          id: string
+          room: string
+          user_id: string
+        }
+        Insert: {
+          author_name?: string
+          body: string
+          created_at?: string
+          id?: string
+          room?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          body?: string
+          created_at?: string
+          id?: string
+          room?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      job_comments: {
+        Row: {
+          author_name: string
+          body: string
+          created_at: string
+          id: string
+          job_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_name?: string
+          body: string
+          created_at?: string
+          id?: string
+          job_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          body?: string
+          created_at?: string
+          id?: string
+          job_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_comments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_reports: {
         Row: {
           created_at: string
@@ -147,25 +212,85 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: string
           avatar_url: string | null
           banned: boolean
+          bio: string | null
+          college: string | null
+          company_name: string | null
+          company_website: string | null
           created_at: string
           full_name: string | null
+          grad_year: number | null
+          headline: string | null
           id: string
+          linkedin_url: string | null
+          location: string | null
+          notify_email: boolean
+          skills: string | null
+          updated_at: string
         }
         Insert: {
+          account_type?: string
           avatar_url?: string | null
           banned?: boolean
+          bio?: string | null
+          college?: string | null
+          company_name?: string | null
+          company_website?: string | null
           created_at?: string
           full_name?: string | null
+          grad_year?: number | null
+          headline?: string | null
           id: string
+          linkedin_url?: string | null
+          location?: string | null
+          notify_email?: boolean
+          skills?: string | null
+          updated_at?: string
         }
         Update: {
+          account_type?: string
           avatar_url?: string | null
           banned?: boolean
+          bio?: string | null
+          college?: string | null
+          company_name?: string | null
+          company_website?: string | null
           created_at?: string
           full_name?: string | null
+          grad_year?: number | null
+          headline?: string | null
           id?: string
+          linkedin_url?: string | null
+          location?: string | null
+          notify_email?: boolean
+          skills?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shoutouts: {
+        Row: {
+          author_name: string
+          body: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          author_name?: string
+          body: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          body?: string
+          created_at?: string
+          id?: string
+          user_id?: string
         }
         Relationships: []
       }

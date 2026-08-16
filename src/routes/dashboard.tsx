@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,13 +7,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { JobCard } from "@/components/JobCard";
+import { PostJobDialog } from "@/components/PostJobDialog";
+import { CommentsDialog } from "@/components/CommentsDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { JobRow } from "@/lib/jobs";
 
-const title = "My posts — CampusHire";
-const description = "Track the approval status, views and report count of every opening you posted on CampusHire.";
+const title = "My posts — MyFirstJob";
+const description = "Edit your fresher job posts and track approval status, views and report counts on MyFirstJob.";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -31,6 +33,8 @@ function DashboardPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const [editJob, setEditJob] = useState<JobRow | null>(null);
+  const [commentJob, setCommentJob] = useState<JobRow | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -74,6 +78,7 @@ function DashboardPage() {
             <JobCard
               key={job.id}
               job={job}
+              onComments={setCommentJob}
               footer={
                 <div className="flex items-center gap-2 border-t border-border pt-3">
                   <Badge
@@ -82,7 +87,10 @@ function DashboardPage() {
                     {job.status}
                   </Badge>
                   <span className="text-xs text-muted-foreground">{job.report_count} reports</span>
-                  <Button size="sm" variant="ghost" className="ml-auto" onClick={() => remove(job.id)}>
+                  <Button size="sm" variant="outline" className="ml-auto" onClick={() => setEditJob(job)}>
+                    Edit
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => remove(job.id)}>
                     Delete
                   </Button>
                 </div>
@@ -95,6 +103,19 @@ function DashboardPage() {
         )}
       </main>
       <SiteFooter />
+      {user && (
+        <PostJobDialog
+          open={!!editJob}
+          onOpenChange={(v) => !v && setEditJob(null)}
+          userId={user.id}
+          job={editJob}
+          onPosted={() => {
+            setEditJob(null);
+            qc.invalidateQueries({ queryKey: ["jobs"] });
+          }}
+        />
+      )}
+      <CommentsDialog job={commentJob} onOpenChange={(v) => !v && setCommentJob(null)} />
     </div>
   );
 }

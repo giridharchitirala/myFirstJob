@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Building2, CalendarClock, Flag, MapPin, ExternalLink } from "lucide-react";
+import { Building2, CalendarClock, Flag, MapPin, ExternalLink, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,10 +8,12 @@ import { signedImageUrl, timeAgo, type JobRow } from "@/lib/jobs";
 export function JobCard({
   job,
   onReport,
+  onComments,
   footer,
 }: {
   job: JobRow;
   onReport?: (job: JobRow) => void;
+  onComments?: (job: JobRow) => void;
   footer?: React.ReactNode;
 }) {
   const [img, setImg] = useState<string | null>(null);
@@ -24,7 +26,7 @@ export function JobCard({
   }, [job.image_url]);
 
   return (
-    <Card className="overflow-hidden transition-shadow hover:shadow-lg">
+    <Card className="overflow-hidden border-t-4 border-t-brand transition-shadow hover:shadow-lg">
       {img && (
         <img src={img} alt={`${job.company} — ${job.title}`} loading="lazy" className="h-40 w-full object-cover" />
       )}
@@ -58,6 +60,11 @@ export function JobCard({
               <a href={job.apply_url} target="_blank" rel="noopener noreferrer">
                 Apply <ExternalLink className="ml-1 h-3.5 w-3.5" />
               </a>
+            </Button>
+          )}
+          {onComments && (
+            <Button size="sm" variant="outline" onClick={() => onComments(job)}>
+              <MessageSquare className="mr-1 h-3.5 w-3.5" /> Comments
             </Button>
           )}
           {onReport && (

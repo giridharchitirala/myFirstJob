@@ -2,13 +2,14 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Flag, Plus, Search, ShieldCheck } from "lucide-react";
+import { Flag, HeartHandshake, Plus, Search, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { JobCard } from "@/components/JobCard";
 import { PostJobDialog } from "@/components/PostJobDialog";
+import { CommentsDialog } from "@/components/CommentsDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,10 +25,11 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { JOB_TYPES, REPORT_LIMIT, WORK_MODES, type JobRow } from "@/lib/jobs";
+import { BRAND, TAGLINE, quoteOfTheDay } from "@/lib/brand";
 
-const title = "CampusHire — verified placement & internship board";
+const title = "MyFirstJob — verified fresher jobs & internships";
 const description =
-  "Browse moderator-approved jobs and internships, post your own openings, and help remove fake listings from the board.";
+  "MyFirstJob is a freshers-only board: post the openings you know, get referrals and comments, and help remove fake listings.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -54,11 +56,13 @@ function HomePage() {
   const [mode, setMode] = useState("all");
   const [postOpen, setPostOpen] = useState(false);
   const [reportJob, setReportJob] = useState<JobRow | null>(null);
+  const [commentJob, setCommentJob] = useState<JobRow | null>(null);
   const [reason, setReason] = useState(REASONS[0]!);
   const [details, setDetails] = useState("");
 
   const { data: jobs, isLoading } = useQuery({
     queryKey: ["jobs", "approved"],
+    enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("jobs")
@@ -108,16 +112,19 @@ function HomePage() {
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
-        <section className="rounded-2xl border border-border bg-card p-8">
-          <p className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <section className="rounded-2xl border border-border bg-gradient-to-br from-primary/25 via-accent/40 to-background p-8">
+          <p className="inline-flex items-center gap-2 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
             <ShieldCheck className="h-3.5 w-3.5" /> Every post is approved by a moderator
           </p>
           <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Find your next role on a board people actually trust
+            {BRAND} — freshers only, no fake listings
           </h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Real openings only. Anyone can post, moderators approve, and a listing flagged by{" "}
-            {REPORT_LIMIT} people is deleted automatically.
+            {TAGLINE} Post the openings you know, help a fresher get referred, and a listing flagged by{" "}
+            {REPORT_LIMIT} members is deleted automatically.
+          </p>
+          <p className="mt-3 inline-flex items-center gap-2 rounded-lg bg-card px-3 py-2 text-sm italic text-foreground">
+            <Sparkles className="h-4 w-4 text-brand-deep" /> “{quoteOfTheDay()}”
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button
@@ -133,6 +140,31 @@ function HomePage() {
           </div>
         </section>
 
+        {!user ? (
+          <section className="mt-10 grid gap-5 sm:grid-cols-3">
+            {[
+              { icon: HeartHandshake, color: "text-coral", title: "Post jobs you know", text: "Share off-campus drives and referrals so another fresher gets a shot." },
+              { icon: Users, color: "text-sky", title: "Ask in group chat", text: "Interview prep, referrals and drive alerts with other freshers." },
+              { icon: ShieldCheck, color: "text-mint", title: "Moderated & safe", text: "Every listing is reviewed; 15 reports delete a post automatically." },
+            ].map((c) => (
+              <div key={c.title} className="rounded-xl border border-border bg-card p-6">
+                <c.icon className={`h-6 w-6 ${c.color}`} />
+                <h2 className="mt-3 font-semibold text-foreground">{c.title}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{c.text}</p>
+              </div>
+            ))}
+            <div className="sm:col-span-3 rounded-xl border border-border bg-accent/50 p-8 text-center">
+              <p className="text-lg font-semibold text-foreground">Sign in to see all live fresher openings</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Free for freshers and companies. Confirm your email and you're in.
+              </p>
+              <Button className="mt-4" onClick={() => navigate({ to: "/auth" })}>
+                Sign in / Create account
+              </Button>
+            </div>
+          </section>
+        ) : (
+        <>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -168,7 +200,8 @@ function HomePage() {
               <JobCard
                 key={job.id}
                 job={job}
-                onReport={(j) => (user ? setReportJob(j) : navigate({ to: "/auth" }))}
+                onComments={setCommentJob}
+                onReport={(j) => setReportJob(j)}
               />
             ))}
         </div>
@@ -177,8 +210,11 @@ function HomePage() {
             No approved openings match your search yet.
           </p>
         )}
+        </>
+        )}
       </main>
       <SiteFooter />
+      <CommentsDialog job={commentJob} onOpenChange={(v) => !v && setCommentJob(null)} />
 
       {user && (
         <PostJobDialog

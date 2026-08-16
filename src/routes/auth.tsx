@@ -11,9 +11,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 
-const title = "Sign in — CampusHire placement board";
+const title = "Sign in — MyFirstJob freshers board";
 const description =
-  "Create a CampusHire account to post verified job openings, track approvals and report fake listings.";
+  "Join MyFirstJob as a fresher or as a company recruiter to post verified entry-level openings and get job alerts.";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -36,6 +36,8 @@ const schema = z.object({
 function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [accountType, setAccountType] = useState<"student" | "hr">("student");
+  const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -62,11 +64,15 @@ function AuthPage() {
           password: parsed.data.password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: parsed.data.fullName || undefined },
+            data: {
+              full_name: parsed.data.fullName || undefined,
+              account_type: accountType,
+              company_name: accountType === "hr" ? companyName.trim().slice(0, 120) : undefined,
+            },
           },
         });
         if (error) throw error;
-        toast.success("Account created. You can start posting now.");
+        toast.success("Account created — check your email to confirm, then start posting.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: parsed.data.email,
@@ -101,12 +107,31 @@ function AuthPage() {
       <main className="mx-auto flex w-full max-w-md flex-1 items-center px-4 py-16">
         <Card className="w-full">
           <CardHeader>
-            <CardTitle>{mode === "signin" ? "Sign in" : "Create your account"}</CardTitle>
+            <CardTitle>{mode === "signin" ? "Welcome back" : "Create your MyFirstJob account"}</CardTitle>
             <CardDescription>
-              Posts are reviewed by moderators before they appear on the board.
+              Freshers-only board. Every post is reviewed by a moderator before it goes live.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {mode === "signup" && (
+              <div className="flex gap-2">
+                {([
+                  { id: "student", label: "I'm a fresher" },
+                  { id: "hr", label: "Company / HR" },
+                ] as const).map((o) => (
+                  <button
+                    key={o.id}
+                    type="button"
+                    onClick={() => setAccountType(o.id)}
+                    className={`flex-1 rounded-lg border border-border px-3 py-2 text-sm ${
+                      accountType === o.id ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground"
+                    }`}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            )}
             <Button variant="outline" className="w-full" onClick={google} type="button">
               Continue with Google
             </Button>
@@ -116,6 +141,17 @@ function AuthPage() {
                 <div className="space-y-1">
                   <Label htmlFor="name">Full name</Label>
                   <Input id="name" value={fullName} maxLength={80} onChange={(e) => setFullName(e.target.value)} />
+                </div>
+              )}
+              {mode === "signup" && accountType === "hr" && (
+                <div className="space-y-1">
+                  <Label htmlFor="company">Company name</Label>
+                  <Input
+                    id="company"
+                    value={companyName}
+                    maxLength={120}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                  />
                 </div>
               )}
               <div className="space-y-1">

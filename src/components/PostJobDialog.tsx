@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EXPERIENCE, JOB_TYPES, WORK_MODES, jobSchema } from "@/lib/jobs";
+import { EXPERIENCE, JOB_TYPES, WORK_MODES, jobSchema, type JobRow } from "@/lib/jobs";
 
 const empty = {
   title: "",
@@ -41,15 +41,38 @@ export function PostJobDialog({
   onOpenChange,
   userId,
   onPosted,
+  job,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   userId: string;
   onPosted: () => void;
+  job?: JobRow | null;
 }) {
   const [form, setForm] = useState({ ...empty });
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    if (!job) {
+      setForm({ ...empty });
+      return;
+    }
+    setForm({
+      title: job.title,
+      company: job.company,
+      location: job.location ?? "",
+      job_type: job.job_type ?? "Full-time",
+      work_mode: job.work_mode ?? "Onsite",
+      experience: job.experience ?? "Fresher",
+      salary: job.salary ?? "",
+      description: job.description ?? "",
+      apply_url: job.apply_url ?? "",
+      deadline: job.deadline ?? "",
+      batch_year: job.batch_year ? String(job.batch_year) : "",
+    });
+  }, [open, job]);
 
   const set = (k: keyof typeof empty, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -72,8 +95,7 @@ export function PostJobDialog({
         imagePath = path;
       }
       const d = parsed.data;
-      const { error } = await supabase.from("jobs").insert({
-        posted_by: userId,
+      const payload = {
         title: d.title,
         company: d.company,
         location: d.location || null,
@@ -85,10 +107,21 @@ export function PostJobDialog({
         apply_url: d.apply_url || null,
         deadline: d.deadline || null,
         batch_year: d.batch_year ? Number(d.batch_year) : null,
-        image_url: imagePath,
-      });
-      if (error) throw error;
-      toast.success("Submitted for review — it goes live once a moderator approves it.");
+      };
+      if (job) {
+        const { error } = await supabase
+          .from("jobs")
+          .update(imagePath ? { ...payload, image_url: imagePath } : payload)
+          .eq("id", job.id);
+        if (error) throw error;
+        toast.success("Post updated.");
+      } else {
+        const { error } = await supabase
+          .from("jobs")
+          .insert({ ...payload, posted_by: userId, image_url: imagePath });
+        if (error) throw error;
+        toast.success("Submitted for review — it goes live once a moderator approves it.");
+      }
       setForm({ ...empty });
       setFile(null);
       onOpenChange(false);
@@ -104,9 +137,10 @@ export function PostJobDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Post an opening</DialogTitle>
+          <DialogTitle>{job ? "Edit your post" : "Post a fresher opening"}</DialogTitle>
           <DialogDescription>
-            Only genuine openings please. Posts flagged 15 times are removed automatically.
+            Freshers-only board — share genuine entry-level roles and internships. Posts flagged by 15 members are
+            removed automatically.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-3">
@@ -176,7 +210,9 @@ export function PostJobDialog({
             <Input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={busy}>{busy ? "Submitting…" : "Submit for review"}</Button>
+            <Button type="submit" disabled={busy}>
+              {busy ? "Saving…" : job ? "Save changes" : "Submit for review"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

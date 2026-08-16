@@ -12,7 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ChatRouteImport } from './routes/chat'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ShoutoutsRouteImport } from './routes/shoutouts'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,9 +32,24 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShoutoutsRoute = ShoutoutsRouteImport.update({
+  id: '/shoutouts',
+  path: '/shoutouts',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -39,34 +57,68 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/chat': typeof ChatRoute
   '/dashboard': typeof DashboardRoute
+  '/profile': typeof ProfileRoute
+  '/shoutouts': typeof ShoutoutsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/chat': typeof ChatRoute
   '/dashboard': typeof DashboardRoute
+  '/profile': typeof ProfileRoute
+  '/shoutouts': typeof ShoutoutsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/chat': typeof ChatRoute
   '/dashboard': typeof DashboardRoute
+  '/profile': typeof ProfileRoute
+  '/shoutouts': typeof ShoutoutsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/auth' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/chat'
+    | '/dashboard'
+    | '/profile'
+    | '/shoutouts'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/auth' | '/dashboard'
-  id: '__root__' | '/' | '/admin' | '/auth' | '/dashboard'
+  to:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/chat'
+    | '/dashboard'
+    | '/profile'
+    | '/shoutouts'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/chat'
+    | '/dashboard'
+    | '/profile'
+    | '/shoutouts'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
+  ChatRoute: typeof ChatRoute
   DashboardRoute: typeof DashboardRoute
+  ProfileRoute: typeof ProfileRoute
+  ShoutoutsRoute: typeof ShoutoutsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,11 +144,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shoutouts': {
+      id: '/shoutouts'
+      path: '/shoutouts'
+      fullPath: '/shoutouts'
+      preLoaderRoute: typeof ShoutoutsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -106,7 +179,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  ChatRoute: ChatRoute,
   DashboardRoute: DashboardRoute,
+  ProfileRoute: ProfileRoute,
+  ShoutoutsRoute: ShoutoutsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
