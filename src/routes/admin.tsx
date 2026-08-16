@@ -15,9 +15,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { REPORT_LIMIT, timeAgo, type JobRow } from "@/lib/jobs";
+import { PostJobDialog } from "@/components/PostJobDialog";
 
-const title = "Admin control centre — CampusHire";
-const description = "Moderate submissions, review reports, manage members and audit every action on CampusHire.";
+const title = "Admin control centre — MyFirstJob";
+const description = "Moderate submissions, review reports, manage members and audit every action on MyFirstJob.";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -236,16 +237,16 @@ function AdminPage() {
           </TabsList>
 
           <TabsContent value="pending" className="mt-4">
-            <JobTable rows={pending} onApprove={(j) => setStatus(j, "approved")} onReject={(j) => setStatus(j, "rejected")} onDelete={removeJob} />
+            <JobTable rows={pending} onApprove={(j) => setStatus(j, "approved")} onReject={(j) => setStatus(j, "rejected")} onDelete={removeJob} onEdit={setEditJob} />
           </TabsContent>
 
           <TabsContent value="reported" className="mt-4">
-            <JobTable rows={reported} onApprove={(j) => setStatus(j, "approved")} onReject={(j) => setStatus(j, "rejected")} onDelete={removeJob} />
+            <JobTable rows={reported} onApprove={(j) => setStatus(j, "approved")} onReject={(j) => setStatus(j, "rejected")} onDelete={removeJob} onEdit={setEditJob} />
           </TabsContent>
 
           <TabsContent value="all" className="mt-4 space-y-3">
             <Input placeholder="Search posts" value={search} maxLength={100} onChange={(e) => setSearch(e.target.value)} />
-            <JobTable rows={all} onApprove={(j) => setStatus(j, "approved")} onReject={(j) => setStatus(j, "rejected")} onDelete={removeJob} />
+            <JobTable rows={all} onApprove={(j) => setStatus(j, "approved")} onReject={(j) => setStatus(j, "rejected")} onDelete={removeJob} onEdit={setEditJob} />
           </TabsContent>
 
           <TabsContent value="members" className="mt-4">
@@ -309,11 +310,13 @@ function JobTable({
   onApprove,
   onReject,
   onDelete,
+  onEdit,
 }: {
   rows: JobRow[];
   onApprove: (j: JobRow) => void;
   onReject: (j: JobRow) => void;
   onDelete: (j: JobRow) => void;
+  onEdit: (j: JobRow) => void;
 }) {
   if (rows.length === 0) {
     return <p className="py-10 text-center text-sm text-muted-foreground">Nothing here right now.</p>;
@@ -352,6 +355,7 @@ function JobTable({
               {j.status !== "rejected" && (
                 <Button size="sm" variant="outline" onClick={() => onReject(j)}>Reject</Button>
               )}
+              <Button size="sm" variant="secondary" onClick={() => onEdit(j)}>Edit</Button>
               <Button size="sm" variant="destructive" onClick={() => onDelete(j)}>Delete</Button>
             </TableCell>
           </TableRow>
