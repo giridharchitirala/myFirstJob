@@ -302,6 +302,18 @@ function AdminPage() {
         </Tabs>
       </main>
       <SiteFooter />
+      {user && (
+        <PostJobDialog
+          open={!!editJob}
+          onOpenChange={(v) => !v && setEditJob(null)}
+          userId={user.id}
+          job={editJob}
+          onPosted={() => {
+            setEditJob(null);
+            refresh();
+          }}
+        />
+      )}
     </div>
   );
 }
