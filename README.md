@@ -2,11 +2,9 @@
 
 this code to build website
 
-This project was built with [Lovable](https://lovable.dev).
+This project was built shanmuk
 
 ## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/d3e960b8-0f67-4351-a5fa-72480bcc0e63).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
 - **Stay in sync**: every change made in Lovable is committed straight to this repository.
