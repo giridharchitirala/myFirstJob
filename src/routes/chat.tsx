@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MessagesSquare, Send, Trash2 } from "lucide-react";
+import { Check, CheckCheck, MessagesSquare, Send, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -43,7 +43,14 @@ function ChatPage() {
   const qc = useQueryClient();
   const [room, setRoom] = useState("general");
   const [text, setText] = useState("");
+  const [online, setOnline] = useState<{ id: string; name: string }[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
+
+  const myName = useMemo(
+    () =>
+      (user?.user_metadata?.["full_name"] as string) || user?.email?.split("@")[0] || "Member",
+    [user],
+  );
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -52,7 +59,6 @@ function ChatPage() {
   const { data } = useQuery({
     queryKey: ["chat", room],
     enabled: !!user,
-    refetchInterval: 4000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chat_messages")
@@ -65,9 +71,87 @@ function ChatPage() {
     },
   });
 
+  const { data: reads } = useQuery({
+    queryKey: ["chat-reads", room],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("chat_reads")
+        .select("user_id, user_name, last_read_at")
+        .eq("room", room);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const markRead = useCallback(async () => {
+    if (!user) return;
+    await supabase
+      .from("chat_reads")
+      .upsert(
+        { user_id: user.id, room, user_name: myName, last_read_at: new Date().toISOString() },
+        { onConflict: "user_id,room" },
+      );
+  }, [user, room, myName]);
+
+  // Live messages + read receipts
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`chat-room-${room}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "chat_messages", filter: `room=eq.${room}` },
+        () => qc.invalidateQueries({ queryKey: ["chat", room] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "chat_reads", filter: `room=eq.${room}` },
+        () => qc.invalidateQueries({ queryKey: ["chat-reads", room] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, room, qc]);
+
+  // Presence: who is online in this room
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase.channel(`presence-${room}`, {
+      config: { presence: { key: user.id } },
+    });
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState<{ name: string }>();
+        setOnline(
+          Object.entries(state).map(([id, metas]) => ({
+            id,
+            name: metas[0]?.name ?? "Member",
+          })),
+        );
+      })
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") void channel.track({ name: myName });
+      });
+    return () => {
+      supabase.removeChannel(channel);
+      setOnline([]);
+    };
+  }, [user, room, myName]);
+
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
   }, [data?.length, room]);
+
+  useEffect(() => {
+    if (!user) return;
+    void markRead();
+  }, [user, room, data?.length, markRead]);
+
+  const othersReads = (reads ?? []).filter((r) => r.user_id !== user?.id);
+  const seenCount = (createdAt: string) =>
+    othersReads.filter((r) => new Date(r.last_read_at).getTime() >= new Date(createdAt).getTime()).length;
 
   async function send() {
     const body = text.trim();
@@ -76,7 +160,7 @@ function ChatPage() {
     const { error } = await supabase.from("chat_messages").insert({
       room,
       user_id: user.id,
-      author_name: (user.user_metadata?.["full_name"] as string) || user.email?.split("@")[0] || "Member",
+      author_name: myName,
       body: body.slice(0, 800),
     });
     if (error) toast.error(error.message);
@@ -95,6 +179,23 @@ function ChatPage() {
         <h1 className="inline-flex items-center gap-2 text-2xl font-bold text-foreground">
           <MessagesSquare className="h-6 w-6 text-sky" /> Group chat
         </h1>
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-mint opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-mint" />
+            </span>
+            {online.length} online
+          </span>
+          <span className="flex flex-wrap gap-1">
+            {online.slice(0, 6).map((o) => (
+              <span key={o.id} className="rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">
+                {o.id === user?.id ? "You" : o.name}
+              </span>
+            ))}
+            {online.length > 6 && <span className="text-xs">+{online.length - 6} more</span>}
+          </span>
+        </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {ROOMS.map((r) => (
             <button
@@ -125,6 +226,19 @@ function ChatPage() {
                     {m.author_name} · {timeAgo(m.created_at)}
                   </p>
                   <p className="mt-1 whitespace-pre-wrap">{m.body}</p>
+                  {mine && (
+                    <p className="mt-1 inline-flex items-center gap-1 text-[11px] opacity-80">
+                      {seenCount(m.created_at) > 0 ? (
+                        <>
+                          <CheckCheck className="h-3 w-3" /> Seen by {seenCount(m.created_at)}
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-3 w-3" /> Sent
+                        </>
+                      )}
+                    </p>
+                  )}
                   {(mine || isAdmin) && (
                     <button className="mt-1 text-xs opacity-70 hover:opacity-100" onClick={() => remove(m.id)}>
                       <Trash2 className="h-3 w-3" />

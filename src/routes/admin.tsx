@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { REPORT_LIMIT, timeAgo, type JobRow } from "@/lib/jobs";
 import { PostJobDialog } from "@/components/PostJobDialog";
+import { EditHistoryDialog } from "@/components/EditHistoryDialog";
 
 const title = "Admin control centre — MyFirstJob";
 const description = "Moderate submissions, review reports, manage members and audit every action on MyFirstJob.";
@@ -58,6 +59,7 @@ function AdminPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [editJob, setEditJob] = useState<JobRow | null>(null);
+  const [historyJob, setHistoryJob] = useState<JobRow | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -238,16 +240,16 @@ function AdminPage() {
           </TabsList>
 
           <TabsContent value="pending" className="mt-4">
-            <JobTable rows={pending} onApprove={(j) => setStatus(j, "approved")} onReject={(j) => setStatus(j, "rejected")} onDelete={removeJob} onEdit={setEditJob} />
+            <JobTable rows={pending} onApprove={(j) => setStatus(j, "approved")} onReject={(j) => setStatus(j, "rejected")} onDelete={removeJob} onEdit={setEditJob} onHistory={setHistoryJob} />
           </TabsContent>
 
           <TabsContent value="reported" className="mt-4">
-            <JobTable rows={reported} onApprove={(j) => setStatus(j, "approved")} onReject={(j) => setStatus(j, "rejected")} onDelete={removeJob} onEdit={setEditJob} />
+            <JobTable rows={reported} onApprove={(j) => setStatus(j, "approved")} onReject={(j) => setStatus(j, "rejected")} onDelete={removeJob} onEdit={setEditJob} onHistory={setHistoryJob} />
           </TabsContent>
 
           <TabsContent value="all" className="mt-4 space-y-3">
             <Input placeholder="Search posts" value={search} maxLength={100} onChange={(e) => setSearch(e.target.value)} />
-            <JobTable rows={all} onApprove={(j) => setStatus(j, "approved")} onReject={(j) => setStatus(j, "rejected")} onDelete={removeJob} onEdit={setEditJob} />
+            <JobTable rows={all} onApprove={(j) => setStatus(j, "approved")} onReject={(j) => setStatus(j, "rejected")} onDelete={removeJob} onEdit={setEditJob} onHistory={setHistoryJob} />
           </TabsContent>
 
           <TabsContent value="members" className="mt-4">
@@ -302,6 +304,7 @@ function AdminPage() {
         </Tabs>
       </main>
       <SiteFooter />
+      <EditHistoryDialog job={historyJob} open={!!historyJob} onOpenChange={(v) => !v && setHistoryJob(null)} />
       {user && (
         <PostJobDialog
           open={!!editJob}
@@ -324,12 +327,14 @@ function JobTable({
   onReject,
   onDelete,
   onEdit,
+  onHistory,
 }: {
   rows: JobRow[];
   onApprove: (j: JobRow) => void;
   onReject: (j: JobRow) => void;
   onDelete: (j: JobRow) => void;
   onEdit: (j: JobRow) => void;
+  onHistory: (j: JobRow) => void;
 }) {
   if (rows.length === 0) {
     return <p className="py-10 text-center text-sm text-muted-foreground">Nothing here right now.</p>;
@@ -369,6 +374,7 @@ function JobTable({
                 <Button size="sm" variant="outline" onClick={() => onReject(j)}>Reject</Button>
               )}
               <Button size="sm" variant="secondary" onClick={() => onEdit(j)}>Edit</Button>
+              <Button size="sm" variant="ghost" onClick={() => onHistory(j)}>History</Button>
               <Button size="sm" variant="destructive" onClick={() => onDelete(j)}>Delete</Button>
             </TableCell>
           </TableRow>
