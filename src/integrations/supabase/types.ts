@@ -71,6 +71,30 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_reads: {
+        Row: {
+          id: string
+          last_read_at: string
+          room: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          id?: string
+          last_read_at?: string
+          room?: string
+          user_id: string
+          user_name?: string
+        }
+        Update: {
+          id?: string
+          last_read_at?: string
+          room?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
       job_comments: {
         Row: {
           author_name: string
@@ -102,6 +126,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "job_comments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_edits: {
+        Row: {
+          changes: Json
+          created_at: string
+          editor_id: string | null
+          id: string
+          job_id: string
+        }
+        Insert: {
+          changes?: Json
+          created_at?: string
+          editor_id?: string | null
+          id?: string
+          job_id: string
+        }
+        Update: {
+          changes?: Json
+          created_at?: string
+          editor_id?: string | null
+          id?: string
+          job_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_edits_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "jobs"
